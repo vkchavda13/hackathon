@@ -284,23 +284,22 @@ export default function AssetDetailPage({
                     <Box>
                       {assetBookings.length > 0 ? (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          {assetBookings.map((b) => (
-                            <Card key={b.id}>
-                              <CardContent sx={{ p: '12px !important' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                    {b.purpose}
-                                  </Typography>
-                                  <StatusChip status={b.status} type="booking" />
-                                </Box>
-                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
-                                  Booked by: {b.requestedByName} ({b.departmentName})
+                          {assetBookings.map((b, idx) => (
+                            <Box key={b.id}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                  {b.purpose}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>
-                                  Schedule: {formatDate(b.startDate)} to {formatDate(b.endDate)}
-                                </Typography>
-                              </CardContent>
-                            </Card>
+                                <StatusChip status={b.status} type="booking" />
+                              </Box>
+                              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                                Booked by: {b.requestedByName} ({b.departmentName})
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.25 }}>
+                                Schedule: {formatDate(b.startDate)} to {formatDate(b.endDate)}
+                              </Typography>
+                              {idx < assetBookings.length - 1 && <Divider sx={{ mt: 2 }} />}
+                            </Box>
                           ))}
                         </Box>
                       ) : (
@@ -413,13 +412,22 @@ export default function AssetDetailPage({
               Enterprise Asset & Resource Management System
             </Typography>
           </Box>
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a' }}>
-              ASSET PROFILE REPORT
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#64748b' }}>
-              Generated: {new Date().toLocaleString('en-IN')}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a' }}>
+                ASSET PROFILE REPORT
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b' }}>
+                Generated: {new Date().toLocaleString('en-IN')}
+              </Typography>
+            </Box>
+            {/* Printable QR Code in Top Right Corner */}
+            <Box
+              component="img"
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(qrData)}`}
+              alt="Print QR"
+              sx={{ width: 60, height: 60, border: '1px solid #cbd5e1', borderRadius: 1, p: 0.5 }}
+            />
           </Box>
         </Box>
 
@@ -499,24 +507,8 @@ export default function AssetDetailPage({
             </Box>
           </Box>
 
-          {/* QR & Barcode print label */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5, borderLeft: '1px solid #cbd5e1', pl: 3, minWidth: 160 }}>
-            {/* QR */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Box
-                component="img"
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`}
-                alt="Asset QR"
-                sx={{ width: 80, height: 80, display: 'block', mx: 'auto', mb: 0.5 }}
-              />
-              <Typography variant="caption" sx={{ fontSize: '0.5rem', fontWeight: 700, color: '#64748b', display: 'block' }}>
-                QR PORTAL VERIFIED
-              </Typography>
-            </Box>
-
-            <Divider sx={{ width: '80%', my: 0.25 }} />
-
-            {/* Barcode */}
+          {/* Barcode only print label */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, borderLeft: '1px solid #cbd5e1', pl: 3, minWidth: 160 }}>
             <Box sx={{ textAlign: 'center', width: '100%' }}>
               <Box
                 component="img"

@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
-import { Shield, Menu } from 'lucide-react';
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, IconButton, useTheme, useMediaQuery, Button, Menu, MenuItem } from '@mui/material';
+import { Shield, Menu as MenuIcon } from 'lucide-react';
 import { navGroups } from '@/constants/navigation';
 import React, { useState, useEffect } from 'react';
 
@@ -98,7 +98,7 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         </Box>
         {isMobile && (
           <IconButton onClick={onMobileClose} sx={{ color: '#64748b' }}>
-            <Menu size={18} />
+            <MenuIcon size={18} />
           </IconButton>
         )}
       </Box>
@@ -169,9 +169,10 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         ))}
       </Box>
 
-      {/* Footer Branding */}
-      <Box sx={{ p: 2, borderTop: '1px solid rgba(250, 250, 248, 0.1)', textAlign: 'center', shrink: 0 }}>
-        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: '#475569', display: 'block' }}>
+      {/* Active Role Switcher at Sidebar Bottom */}
+      <Box sx={{ p: 1.5, borderTop: '1px solid rgba(250, 250, 248, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, shrink: 0 }}>
+        <RoleSwitcher />
+        <Typography variant="caption" sx={{ fontSize: '0.55rem', color: '#64748b', display: 'block', mt: 0.5 }}>
           AssetFlow v1.0.0
         </Typography>
       </Box>
@@ -206,5 +207,105 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         {drawerContent}
       </Drawer>
     </>
+  );
+}
+
+function RoleSwitcher() {
+  const [activeRole, setActiveRole] = useState<'admin' | 'manager' | 'head' | 'employee'>('admin');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user-role') as any;
+    if (saved) setActiveRole(saved);
+
+    const handleRoleChange = () => {
+      const current = localStorage.getItem('user-role') as any;
+      if (current) setActiveRole(current);
+    };
+
+    window.addEventListener('user-role-changed', handleRoleChange);
+    return () => window.removeEventListener('user-role-changed', handleRoleChange);
+  }, []);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelectRole = (role: 'admin' | 'manager' | 'head' | 'employee') => {
+    localStorage.setItem('user-role', role);
+    setActiveRole(role);
+    window.dispatchEvent(new Event('user-role-changed'));
+    handleClose();
+  };
+
+  const getRoleBadgeColor = () => {
+    switch (activeRole) {
+      case 'admin': return { bg: 'rgba(113, 75, 103, 0.15)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.2)' };
+      case 'manager': return { bg: 'rgba(0, 160, 157, 0.25)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.2)' };
+      case 'head': return { bg: 'rgba(217, 119, 6, 0.25)', text: '#ffffff', border: 'rgba(255, 255, 255, 0.2)' };
+      case 'employee': return { bg: 'rgba(148, 163, 184, 0.15)', text: '#cbd5e1', border: 'rgba(255, 255, 255, 0.1)' };
+    }
+  };
+
+  const colors = getRoleBadgeColor();
+
+  return (
+    <Box sx={{ width: '100%', px: 1 }}>
+      <Button
+        onClick={handleClick}
+        variant="outlined"
+        fullWidth
+        size="small"
+        sx={{
+          py: 0.75,
+          fontSize: '0.7rem',
+          backgroundColor: colors.bg,
+          color: colors.text,
+          borderColor: colors.border,
+          textTransform: 'uppercase',
+          fontWeight: 700,
+          letterSpacing: '0.05em',
+          '&:hover': {
+            backgroundColor: colors.bg,
+            borderColor: '#ffffff',
+          },
+        }}
+      >
+        Active Role: {activeRole}
+      </Button>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{
+          '& .MuiPaper-root': {
+            backgroundColor: '#1e293b',
+            color: '#f8fafc',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            minWidth: 160,
+          },
+        }}
+      >
+        <MenuItem onClick={() => handleSelectRole('admin')} sx={{ fontSize: '0.75rem', py: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.05)' } }}>
+          System Admin
+        </MenuItem>
+        <MenuItem onClick={() => handleSelectRole('manager')} sx={{ fontSize: '0.75rem', py: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.05)' } }}>
+          Asset Manager
+        </MenuItem>
+        <MenuItem onClick={() => handleSelectRole('head')} sx={{ fontSize: '0.75rem', py: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.05)' } }}>
+          Department Head
+        </MenuItem>
+        <MenuItem onClick={() => handleSelectRole('employee')} sx={{ fontSize: '0.75rem', py: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.05)' } }}>
+          Staff Employee
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }
