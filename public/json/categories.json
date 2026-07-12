@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cat-001", "name": "Laptops", "code": "LAP", "description": "Portable computing devices including ultrabooks, workstations, and standard business laptops", "parentId": null, "assetCount": 85, "depreciationRate": 25, "usefulLifeYears": 4, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-06-20T14:30:00Z"
+  },
+  {
+    "id": "cat-002", "name": "Desktop Computers", "code": "DSK", "description": "Stationary workstations, all-in-one PCs, and high-performance computing stations", "parentId": null, "assetCount": 42, "depreciationRate": 25, "usefulLifeYears": 5, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-05-10T11:15:00Z"
+  },
+  {
+    "id": "cat-003", "name": "Monitors & Displays", "code": "MON", "description": "External monitors, large-format displays, and digital signage screens", "parentId": null, "assetCount": 65, "depreciationRate": 20, "usefulLifeYears": 6, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-06-01T16:45:00Z"
+  },
+  {
+    "id": "cat-004", "name": "Networking Equipment", "code": "NET", "description": "Routers, switches, access points, firewalls, and network infrastructure hardware", "parentId": null, "assetCount": 38, "depreciationRate": 20, "usefulLifeYears": 5, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-06-15T09:30:00Z"
+  },
+  {
+    "id": "cat-005", "name": "Printers & Scanners", "code": "PRT", "description": "Laser printers, multifunction devices, large-format plotters, and document scanners", "parentId": null, "assetCount": 22, "depreciationRate": 20, "usefulLifeYears": 5, "isActive": true, "createdAt": "2024-02-01T09:00:00Z", "updatedAt": "2026-06-18T13:20:00Z"
+  },
+  {
+    "id": "cat-006", "name": "Office Furniture", "code": "FUR", "description": "Desks, ergonomic chairs, filing cabinets, conference tables, and storage units", "parentId": null, "assetCount": 150, "depreciationRate": 10, "usefulLifeYears": 10, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "cat-007", "name": "Vehicles", "code": "VEH", "description": "Company cars, vans, delivery vehicles, and utility transport", "parentId": null, "assetCount": 12, "depreciationRate": 15, "usefulLifeYears": 8, "isActive": true, "createdAt": "2024-02-01T09:00:00Z", "updatedAt": "2026-06-25T08:45:00Z"
+  },
+  {
+    "id": "cat-008", "name": "Lab Equipment", "code": "LAB", "description": "Scientific instruments, testing devices, 3D printers, and specialized R&D equipment", "parentId": null, "assetCount": 45, "depreciationRate": 15, "usefulLifeYears": 7, "isActive": true, "createdAt": "2024-03-01T09:00:00Z", "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "cat-009", "name": "Audio/Video Equipment", "code": "AV", "description": "Projectors, cameras, microphones, speakers, and video conferencing systems", "parentId": null, "assetCount": 28, "depreciationRate": 20, "usefulLifeYears": 5, "isActive": true, "createdAt": "2024-03-01T09:00:00Z", "updatedAt": "2026-05-28T15:30:00Z"
+  },
+  {
+    "id": "cat-010", "name": "Mobile Devices", "code": "MOB", "description": "Tablets, smartphones, and portable communication devices", "parentId": null, "assetCount": 35, "depreciationRate": 30, "usefulLifeYears": 3, "isActive": true, "createdAt": "2024-04-01T09:00:00Z", "updatedAt": "2026-06-05T10:15:00Z"
+  },
+  {
+    "id": "cat-011", "name": "Server Hardware", "code": "SRV", "description": "Rack servers, blade servers, UPS systems, and data center infrastructure", "parentId": null, "assetCount": 18, "depreciationRate": 20, "usefulLifeYears": 5, "isActive": true, "createdAt": "2024-01-15T09:00:00Z", "updatedAt": "2026-06-12T11:45:00Z"
+  },
+  {
+    "id": "cat-012", "name": "Safety Equipment", "code": "SAF", "description": "Fire extinguishers, first aid kits, safety gear, and emergency response equipment", "parentId": null, "assetCount": 60, "depreciationRate": 10, "usefulLifeYears": 10, "isActive": true, "createdAt": "2024-02-15T09:00:00Z", "updatedAt": "2026-06-28T09:00:00Z"
+  }
+]

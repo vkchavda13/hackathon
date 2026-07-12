@@ -1,0 +1,18 @@
+{
+  "organizationName": "AssetFlow Technologies Pvt. Ltd.",
+  "organizationAddress": "Tower B, 4th Floor, IT Park, Gandhinagar, Gujarat 382007, India",
+  "contactEmail": "admin@assetflow.com",
+  "contactPhone": "+91-79-2630-0000",
+  "assetIdPrefix": "AF",
+  "assetIdNextNumber": 31,
+  "financialYearStart": "04-01",
+  "currency": "INR",
+  "depreciationMethod": "straight_line",
+  "maintenanceReminderDays": 7,
+  "warrantyReminderDays": 30,
+  "auditFrequency": "quarterly",
+  "lowStockThreshold": 5,
+  "enableEmailNotifications": true,
+  "enableBookingApproval": true,
+  "timezone": "Asia/Kolkata"
+}

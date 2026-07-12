@@ -1,0 +1,35 @@
+{
+  "name": "assetflow",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.4.0",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "@mui/x-data-grid": "^9.9.0",
+    "@tanstack/react-query": "^5.101.2",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "date-fns": "^4.4.0",
+    "lucide-react": "^1.24.0",
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hook-form": "^7.81.0",
+    "recharts": "^3.9.2",
+    "sonner": "^2.0.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
