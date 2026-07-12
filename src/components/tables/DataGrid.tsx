@@ -1,6 +1,6 @@
 'use client';
 
-import { DataGrid as MuiDataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataGrid as MuiDataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Box, Paper } from '@mui/material';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingState from '@/components/common/LoadingState';
@@ -15,6 +15,7 @@ interface DataGridProps {
   onPageChange?: (page: number) => void;
   checkboxSelection?: boolean;
   getRowId?: (row: any) => string | number;
+  onRowClick?: (params: GridRowParams) => void;
 }
 
 export default function DataGrid({
@@ -24,8 +25,8 @@ export default function DataGrid({
   pageSize = 10,
   checkboxSelection = false,
   getRowId,
+  onRowClick,
 }: DataGridProps) {
-  // Common DataGrid Styling to replicate AM Guni's simple layout
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
       <Box sx={{ width: '100%', height: 450 }}>
@@ -40,8 +41,9 @@ export default function DataGrid({
           }}
           pageSizeOptions={[5, 10, 20, 50]}
           checkboxSelection={checkboxSelection}
-          disableRowSelectionOnClick
+          disableRowSelectionOnClick={!onRowClick} // Only disable if no click handler is active
           getRowId={getRowId}
+          onRowClick={onRowClick}
           slots={{
             noRowsOverlay: () => (
               <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -73,9 +75,14 @@ export default function DataGrid({
             '& .MuiDataGrid-cell': {
               borderBottom: '1px solid #f1f5f9',
               py: 1,
+              outline: 'none !important', // clean focus border
             },
-            '& .MuiDataGrid-row:hover': {
-              backgroundColor: 'rgba(248, 250, 252, 0.6)',
+            '& .MuiDataGrid-row': {
+              cursor: onRowClick ? 'pointer' : 'default',
+              transition: 'background-color 0.15s ease',
+              '&:hover': {
+                backgroundColor: 'rgba(113, 75, 103, 0.04) !important', // smooth Odoo tint on hover!
+              },
             },
             '& .MuiDataGrid-footerContainer': {
               borderTop: '1px solid #e2e8f0',

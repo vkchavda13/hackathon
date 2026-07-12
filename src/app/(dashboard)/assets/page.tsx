@@ -56,11 +56,11 @@ export default function AssetsPage({ onMenuToggle }: { onMenuToggle?: () => void
       ),
     },
     { field: 'name', headerName: 'Asset Name', flex: 1.5, renderCell: (params: any) => (
-      <Box sx={{ py: 0.5 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e293b' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineHeight: 1.2 }}>
           {params.row.name}
         </Typography>
-        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem', lineHeight: 1.2, mt: 0.25 }}>
           {params.row.manufacturer} — {params.row.model}
         </Typography>
       </Box>
@@ -138,6 +138,7 @@ export default function AssetsPage({ onMenuToggle }: { onMenuToggle?: () => void
           rows={filtered}
           columns={columns}
           loading={isLoading}
+          onRowClick={(params) => router.push(`/assets/${params.row.id}`)}
         />
       </PageContainer>
     </>
