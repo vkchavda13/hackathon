@@ -118,7 +118,7 @@ export default function PageContainer({ children }: { children: React.ReactNode 
             Access Restricted
           </Typography>
           <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.78rem', lineHeight: 1.5 }}>
-            This screen is restricted to authorized roles. To access this section, please switch your role to <strong>{requiredRoles}</strong> using the selector in the top bar.
+            This screen is restricted to authorized roles. To access this section, please switch your role to <strong>{requiredRoles}</strong> using the selector at the bottom of the sidebar.
           </Typography>
         </Paper>
       </Box>

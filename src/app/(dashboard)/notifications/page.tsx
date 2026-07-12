@@ -106,25 +106,27 @@ export default function NotificationsPage({ onMenuToggle }: { onMenuToggle?: () 
                     }
                   >
                     <ListItemIcon sx={{ minWidth: 32 }}>{getNotifIcon(item.type)}</ListItemIcon>
-                    <ListItemText
-                      primary={item.title}
-                      secondary={
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, mt: 0.5 }}>
-                          <Typography component="div" variant="body2" sx={{ color: '#475569', fontSize: '0.75rem' }}>
-                            {item.message}
-                          </Typography>
-                          <Typography component="div" variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
-                            {formatRelativeTime(item.createdAt)}
-                          </Typography>
-                        </Box>
-                      }
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primaryTypographyProps={{
-                        fontSize: '0.8125rem',
-                        fontWeight: item.isRead ? 550 : 700,
-                        color: '#1e293b',
-                      }}
-                    />
+                    <Box sx={{ flex: '1 1 auto', minWidth: 0, py: 0.5 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontSize: '0.8125rem',
+                          fontWeight: item.isRead ? 550 : 700,
+                          color: '#1e293b',
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {item.title}
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, mt: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.75rem', lineHeight: 1.3 }}>
+                          {item.message}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+                          {formatRelativeTime(item.createdAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </ListItem>
                 </Box>
               ))}

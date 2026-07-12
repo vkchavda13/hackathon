@@ -6,21 +6,33 @@ import { Box, Card, CardContent, Typography, TextField, Button, InputAdornment, 
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import { useAuth } from '@/providers/AuthProvider';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error('Email and password are required');
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login(email, password);
+      toast.success('Signed in successfully');
       router.push('/');
-    }, 400);
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

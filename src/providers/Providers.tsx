@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { useState } from 'react';
 import theme from '@/styles/theme';
+import { AuthProvider } from './AuthProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,21 +24,23 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MuiThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          toastOptions={{
-            style: {
-              fontSize: '0.8125rem',
-              fontFamily: '"Inter", sans-serif',
-            },
-          }}
-        />
-      </MuiThemeProvider>
+      <AuthProvider>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            toastOptions={{
+              style: {
+                fontSize: '0.8125rem',
+                fontFamily: '"Inter", sans-serif',
+              },
+            }}
+          />
+        </MuiThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
