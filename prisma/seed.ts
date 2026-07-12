@@ -1,6 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Run db push programmatically to create the database and tables if they do not exist
+try {
+  console.log('Ensuring database exists and is synchronized...');
+  execSync('npx prisma db push --skip-generate', { stdio: 'inherit' });
+} catch (error) {
+  console.warn('Warning: Failed to run prisma db push. Database might already exist or URL is not reachable yet.', error);
+}
 
 const prisma = new PrismaClient();
 
