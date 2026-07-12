@@ -19,7 +19,7 @@ export default function LineChart({
   data,
   dataKey,
   xAxisKey,
-  color = '#2563eb',
+  color = '#714B67',
   height = 300,
 }: LineChartProps) {
   const [mounted, setMounted] = useState(false);
