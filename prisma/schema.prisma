@@ -1,0 +1,250 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id               String     @id
+  name             String
+  code             String
+  description      String
+  parentId         String?
+  assetCount       Int        @default(0)
+  depreciationRate Float
+  usefulLifeYears  Int
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  parent           Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children         Category[] @relation("CategoryToCategory")
+  assets           Asset[]
+}
+
+model Department {
+  id            String       @id
+  name          String
+  code          String
+  description   String
+  headId        String?      @unique
+  headName      String?
+  location      String
+  employeeCount Int          @default(0)
+  assetCount    Int          @default(0)
+  budget        Float
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  head          Employee?    @relation("DepartmentHead", fields: [headId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  employees     Employee[]   @relation("DepartmentEmployees")
+  assets        Asset[]
+  allocations   Allocation[]
+  audits        AuditCycle[]
+}
+
+model Employee {
+  id               String        @id
+  employeeId       String        @unique
+  firstName        String
+  lastName         String
+  email            String        @unique
+  phone            String
+  departmentId     String
+  departmentName   String
+  designation      String
+  status           String        // active, on_leave, inactive
+  joinDate         String        // "YYYY-MM-DD"
+  allocatedAssets  Int           @default(0)
+  avatarUrl        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  department       Department    @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  headedDepartment Department?   @relation("DepartmentHead")
+  assets           Asset[]       @relation("AssignedTo")
+  allocations      Allocation[]  @relation("EmployeeAllocations")
+  prevAllocations  Allocation[]  @relation("PreviousEmployeeAllocations")
+  conductedAudits  AuditCycle[]  @relation("ConductedAudits")
+  bookings         Booking[]     @relation("RequestedByBookings")
+  approvedBookings Booking[]     @relation("ApprovedByBookings")
+  maintenances     Maintenance[] @relation("AssignedToMaintenance")
+}
+
+model Asset {
+  id             String        @id
+  assetTag       String        @unique
+  name           String
+  description    String
+  categoryId     String
+  categoryName   String
+  departmentId   String
+  departmentName String
+  status         String        // allocated, available, maintenance, retired
+  condition      String        // excellent, good, fair, poor
+  serialNumber   String
+  model          String
+  manufacturer   String
+  purchaseDate   String        // "YYYY-MM-DD"
+  purchasePrice  Float
+  currentValue   Float
+  warrantyExpiry String        // "YYYY-MM-DD"
+  location       String
+  assignedToId   String?
+  assignedToName String?
+  notes          String
+  imageUrl       String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  category       Category      @relation(fields: [categoryId], references: [id])
+  department     Department    @relation(fields: [departmentId], references: [id])
+  assignedTo     Employee?     @relation("AssignedTo", fields: [assignedToId], references: [id])
+  allocations    Allocation[]
+  bookings       Booking[]
+  maintenances   Maintenance[]
+}
+
+model Allocation {
+  id                   String     @id
+  assetId              String
+  assetTag             String
+  assetName            String
+  employeeId           String
+  employeeName         String
+  departmentId         String
+  departmentName       String
+  type                 String     // assignment, transfer
+  status               String     // active, returned
+  allocatedDate        String     // "YYYY-MM-DD"
+  returnDate           String?    // "YYYY-MM-DD"
+  expectedReturnDate   String?
+  notes                String
+  previousEmployeeId   String?
+  previousEmployeeName String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  asset                Asset      @relation(fields: [assetId], references: [id])
+  employee             Employee   @relation("EmployeeAllocations", fields: [employeeId], references: [id])
+  previousEmployee     Employee?  @relation("PreviousEmployeeAllocations", fields: [previousEmployeeId], references: [id])
+  department           Department @relation(fields: [departmentId], references: [id])
+}
+
+model AuditCycle {
+  id               String      @id
+  name             String
+  description      String
+  status           String      // completed, in_progress, planned
+  startDate        String      // "YYYY-MM-DD"
+  endDate          String?     // "YYYY-MM-DD"
+  departmentId     String?
+  departmentName   String?
+  totalAssets      Int
+  verifiedCount    Int
+  discrepancyCount Int
+  missingCount     Int
+  conductedById    String?
+  conductedByName  String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  department       Department? @relation(fields: [departmentId], references: [id])
+  conductedBy      Employee?   @relation("ConductedAudits", fields: [conductedById], references: [id])
+}
+
+model Booking {
+  id              String    @id
+  assetId         String
+  assetTag        String
+  assetName       String
+  requestedById   String
+  requestedByName String
+  departmentName  String
+  status          String    // approved, pending, completed, rejected
+  startDate       DateTime
+  endDate         DateTime
+  purpose         String
+  notes           String
+  approvedById    String?
+  approvedByName  String?
+  approvedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  asset           Asset     @relation(fields: [assetId], references: [id])
+  requestedBy     Employee  @relation("RequestedByBookings", fields: [requestedById], references: [id])
+  approvedBy      Employee? @relation("ApprovedByBookings", fields: [approvedById], references: [id])
+}
+
+model Maintenance {
+  id             String    @id
+  assetId        String
+  assetTag       String
+  assetName      String
+  type           String    // corrective, preventive, inspection, emergency
+  status         String    // in_progress, scheduled, completed, overdue
+  priority       String    // low, medium, high, critical
+  title          String
+  description    String
+  scheduledDate  String    // "YYYY-MM-DD"
+  completedDate  String?   // "YYYY-MM-DD"
+  assignedToId   String?
+  assignedToName String?
+  cost           Float
+  vendor         String?
+  notes          String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  asset          Asset     @relation(fields: [assetId], references: [id])
+  assignedTo     Employee? @relation("AssignedToMaintenance", fields: [assignedToId], references: [id])
+}
+
+model Notification {
+  id         String   @id
+  type       String
+  priority   String
+  title      String
+  message    String
+  isRead     Boolean  @default(false)
+  entityType String?
+  entityId   String?
+  createdAt  DateTime @default(now())
+}
+
+model Report {
+  id              String   @id
+  name            String
+  type            String
+  description     String
+  format          String
+  generatedAt     DateTime @default(now())
+  generatedByName String
+  fileSize        String
+  parameters      Json
+}
+
+model Settings {
+  id                       Int     @id @default(1)
+  organizationName         String
+  organizationAddress      String
+  contactEmail             String
+  contactPhone             String
+  assetIdPrefix            String
+  assetIdNextNumber        Int
+  financialYearStart       String  // "MM-DD"
+  currency                 String
+  depreciationMethod       String
+  maintenanceReminderDays  Int
+  warrantyReminderDays     Int
+  auditFrequency           String
+  lowStockThreshold        Int
+  enableEmailNotifications Boolean
+  enableBookingApproval    Boolean
+  timezone                 String
+}

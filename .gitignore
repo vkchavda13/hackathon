@@ -44,3 +44,5 @@ cypress/screenshots/
 
 # TypeScript cache
 *.tsbuildinfo
+
+/src/generated/prisma
