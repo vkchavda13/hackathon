@@ -1,37 +1,46 @@
-import type { AuditCycle, AuditCycleFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Audit Repository ─────────────────────────────────────────────────────────
+// Data access layer for physical audits. Calls /api/audit (Prisma-backed).
 
-const JSON_PATH = '/json/audit.json';
+import type { AuditCycle, AuditCycleFormData } from '@/types';
+
+const BASE = '/api/audit';
 
 export const AuditRepository = {
   async getAll(): Promise<AuditCycle[]> {
-    return fetchJsonData<AuditCycle>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch audit cycles');
+    return res.json();
   },
+
   async getById(id: string): Promise<AuditCycle | null> {
-    const items = await this.getAll();
-    return items.find((a) => a.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch audit cycle');
+    return res.json();
   },
+
   async create(data: AuditCycleFormData): Promise<AuditCycle> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(), ...data, status: 'planned', endDate: null,
-      departmentName: null, totalAssets: 0, verifiedCount: 0,
-      discrepancyCount: 0, missingCount: 0, conductedById: null,
-      conductedByName: null, createdAt: now, updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create audit cycle');
+    return res.json();
   },
+
   async update(id: string, data: Partial<AuditCycle>): Promise<AuditCycle> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const cycle = await this.getById(id);
-    if (!cycle) throw new Error('Audit cycle not found');
-    return { ...cycle, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update audit cycle');
+    return res.json();
   },
+
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete audit cycle');
   },
 };

@@ -1,36 +1,46 @@
-import type { Category, CategoryFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Category Repository ───────────────────────────────────────────────────────
+// Data access layer for asset categories. Calls /api/categories (Prisma-backed).
 
-const JSON_PATH = '/json/categories.json';
+import type { Category, CategoryFormData } from '@/types';
+
+const BASE = '/api/categories';
 
 export const CategoryRepository = {
   async getAll(): Promise<Category[]> {
-    return fetchJsonData<Category>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch categories');
+    return res.json();
   },
 
   async getById(id: string): Promise<Category | null> {
-    const items = await this.getAll();
-    return items.find((c) => c.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch category');
+    return res.json();
   },
 
   async create(data: CategoryFormData): Promise<Category> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return { id: generateId(), ...data, assetCount: 0, createdAt: now, updatedAt: now };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create category');
+    return res.json();
   },
 
   async update(id: string, data: Partial<Category>): Promise<Category> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const cat = await this.getById(id);
-    if (!cat) throw new Error('Category not found');
-    return { ...cat, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update category');
+    return res.json();
   },
 
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete category');
   },
 };

@@ -1,68 +1,62 @@
 // ─── Asset Repository ─────────────────────────────────────────────────────────
-// Data access layer for assets. Replace internals with Prisma later.
+// Data access layer for assets. Calls /api/assets route handlers (Prisma-backed).
 
 import type { Asset, AssetFormData, AssetStatus } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
 
-const JSON_PATH = '/json/assets.json';
+const BASE = '/api/assets';
 
 export const AssetRepository = {
   async getAll(): Promise<Asset[]> {
-    return fetchJsonData<Asset>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch assets');
+    return res.json();
   },
 
   async getById(id: string): Promise<Asset | null> {
-    const assets = await this.getAll();
-    return assets.find((a) => a.id === id || a.assetTag === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch asset');
+    return res.json();
   },
 
   async getByDepartment(departmentId: string): Promise<Asset[]> {
-    const assets = await this.getAll();
-    return assets.filter((a) => a.departmentId === departmentId);
+    const all = await this.getAll();
+    return all.filter((a) => a.departmentId === departmentId);
   },
 
   async getByCategory(categoryId: string): Promise<Asset[]> {
-    const assets = await this.getAll();
-    return assets.filter((a) => a.categoryId === categoryId);
+    const all = await this.getAll();
+    return all.filter((a) => a.categoryId === categoryId);
   },
 
   async getByStatus(status: AssetStatus): Promise<Asset[]> {
-    const assets = await this.getAll();
-    return assets.filter((a) => a.status === status);
+    const all = await this.getAll();
+    return all.filter((a) => a.status === status);
   },
 
   async create(data: AssetFormData): Promise<Asset> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(),
-      assetTag: `AF-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`,
-      ...data,
-      status: 'available',
-      currentValue: data.purchasePrice,
-      categoryName: '',
-      departmentName: '',
-      assignedToId: null,
-      assignedToName: null,
-      imageUrl: null,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create asset');
+    return res.json();
   },
 
   async update(id: string, data: Partial<Asset>): Promise<Asset> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const asset = await this.getById(id);
-    if (!asset) throw new Error('Asset not found');
-    return { ...asset, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update asset');
+    return res.json();
   },
 
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete asset');
   },
 
   async getStats(): Promise<{
@@ -72,13 +66,8 @@ export const AssetRepository = {
     maintenance: number;
     retired: number;
   }> {
-    const assets = await this.getAll();
-    return {
-      total: assets.length,
-      available: assets.filter((a) => a.status === 'available').length,
-      allocated: assets.filter((a) => a.status === 'allocated').length,
-      maintenance: assets.filter((a) => a.status === 'maintenance').length,
-      retired: assets.filter((a) => a.status === 'retired' || a.status === 'disposed').length,
-    };
+    const res = await fetch(`${BASE}/stats`);
+    if (!res.ok) throw new Error('Failed to fetch asset stats');
+    return res.json();
   },
 };

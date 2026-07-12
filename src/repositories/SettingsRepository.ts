@@ -1,16 +1,24 @@
-import type { AppSettings } from '@/types';
-import { fetchJsonSingle } from './base';
-import { simulateDelay } from '@/utils/format';
+// ─── Settings Repository ───────────────────────────────────────────────────────
+// Data access layer for app configurations. Calls /api/settings (Prisma-backed).
 
-const JSON_PATH = '/json/settings.json';
+import type { AppSettings } from '@/types';
+
+const BASE = '/api/settings';
 
 export const SettingsRepository = {
   async get(): Promise<AppSettings> {
-    return fetchJsonSingle<AppSettings>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch settings configurations');
+    return res.json();
   },
+
   async update(data: Partial<AppSettings>): Promise<AppSettings> {
-    await simulateDelay(300);
-    const current = await this.get();
-    return { ...current, ...data };
+    const res = await fetch(BASE, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to save settings configurations');
+    return res.json();
   },
 };

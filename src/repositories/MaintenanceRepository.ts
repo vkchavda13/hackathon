@@ -1,40 +1,51 @@
-import type { MaintenanceRecord, MaintenanceFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Maintenance Repository ───────────────────────────────────────────────────
+// Data access layer for maintenance tickets. Calls /api/maintenance (Prisma-backed).
 
-const JSON_PATH = '/json/maintenance.json';
+import type { MaintenanceRecord, MaintenanceFormData } from '@/types';
+
+const BASE = '/api/maintenance';
 
 export const MaintenanceRepository = {
   async getAll(): Promise<MaintenanceRecord[]> {
-    return fetchJsonData<MaintenanceRecord>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch maintenance tickets');
+    return res.json();
   },
+
   async getById(id: string): Promise<MaintenanceRecord | null> {
-    const items = await this.getAll();
-    return items.find((m) => m.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch maintenance ticket');
+    return res.json();
   },
+
   async getByAsset(assetId: string): Promise<MaintenanceRecord[]> {
-    const items = await this.getAll();
-    return items.filter((m) => m.assetId === assetId);
+    const all = await this.getAll();
+    return all.filter((m) => m.assetId === assetId);
   },
+
   async create(data: MaintenanceFormData): Promise<MaintenanceRecord> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(), ...data, assetTag: '', assetName: '',
-      status: 'scheduled', assignedToName: null, completedDate: null, cost: 0,
-      createdAt: now, updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create maintenance ticket');
+    return res.json();
   },
+
   async update(id: string, data: Partial<MaintenanceRecord>): Promise<MaintenanceRecord> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const record = await this.getById(id);
-    if (!record) throw new Error('Maintenance record not found');
-    return { ...record, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update maintenance ticket');
+    return res.json();
   },
+
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete maintenance ticket');
   },
 };

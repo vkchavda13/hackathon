@@ -1,45 +1,59 @@
-import type { Allocation, AllocationFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Allocation Repository ─────────────────────────────────────────────────────
+// Data access layer for asset allocations. Calls /api/allocations (Prisma-backed).
 
-const JSON_PATH = '/json/allocations.json';
+import type { Allocation, AllocationFormData } from '@/types';
+
+const BASE = '/api/allocations';
 
 export const AllocationRepository = {
   async getAll(): Promise<Allocation[]> {
-    return fetchJsonData<Allocation>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch allocations');
+    return res.json();
   },
+
   async getById(id: string): Promise<Allocation | null> {
-    const items = await this.getAll();
-    return items.find((a) => a.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch allocation');
+    return res.json();
   },
+
   async getByAsset(assetId: string): Promise<Allocation[]> {
-    const items = await this.getAll();
-    return items.filter((a) => a.assetId === assetId);
+    const all = await this.getAll();
+    return all.filter((a) => a.assetId === assetId);
   },
+
   async getByEmployee(employeeId: string): Promise<Allocation[]> {
-    const items = await this.getAll();
-    return items.filter((a) => a.employeeId === employeeId);
+    const all = await this.getAll();
+    return all.filter((a) => a.employeeId === employeeId);
   },
+
   async create(data: AllocationFormData): Promise<Allocation> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(), ...data, assetTag: '', assetName: '', employeeName: '',
-      departmentId: '', departmentName: '', status: 'active',
-      returnDate: null, previousEmployeeId: null, previousEmployeeName: null,
-      createdAt: now, updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || 'Failed to create allocation');
+    }
+    return res.json();
   },
+
   async update(id: string, data: Partial<Allocation>): Promise<Allocation> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const alloc = await this.getById(id);
-    if (!alloc) throw new Error('Allocation not found');
-    return { ...alloc, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update allocation');
+    return res.json();
   },
+
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete allocation');
   },
 };

@@ -1,41 +1,54 @@
-import type { Booking, BookingFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Booking Repository ────────────────────────────────────────────────────────
+// Data access layer for resource bookings. Calls /api/bookings (Prisma-backed).
 
-const JSON_PATH = '/json/bookings.json';
+import type { Booking, BookingFormData } from '@/types';
+
+const BASE = '/api/bookings';
 
 export const BookingRepository = {
   async getAll(): Promise<Booking[]> {
-    return fetchJsonData<Booking>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch bookings');
+    return res.json();
   },
+
   async getById(id: string): Promise<Booking | null> {
-    const items = await this.getAll();
-    return items.find((b) => b.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch booking');
+    return res.json();
   },
+
   async getByAsset(assetId: string): Promise<Booking[]> {
-    const items = await this.getAll();
-    return items.filter((b) => b.assetId === assetId);
+    const all = await this.getAll();
+    return all.filter((b) => b.assetId === assetId);
   },
+
   async create(data: BookingFormData): Promise<Booking> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(), ...data, assetTag: '', assetName: '',
-      requestedById: '', requestedByName: '', departmentName: '',
-      status: 'pending', approvedById: null, approvedByName: null, approvedAt: null,
-      createdAt: now, updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || 'Failed to create booking');
+    }
+    return res.json();
   },
+
   async update(id: string, data: Partial<Booking>): Promise<Booking> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const booking = await this.getById(id);
-    if (!booking) throw new Error('Booking not found');
-    return { ...booking, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update booking');
+    return res.json();
   },
+
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete booking');
   },
 };

@@ -1,44 +1,46 @@
-import type { Department, DepartmentFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Department Repository ─────────────────────────────────────────────────────
+// Data access layer for departments. Calls /api/departments (Prisma-backed).
 
-const JSON_PATH = '/json/departments.json';
+import type { Department, DepartmentFormData } from '@/types';
+
+const BASE = '/api/departments';
 
 export const DepartmentRepository = {
   async getAll(): Promise<Department[]> {
-    return fetchJsonData<Department>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch departments');
+    return res.json();
   },
 
   async getById(id: string): Promise<Department | null> {
-    const items = await this.getAll();
-    return items.find((d) => d.id === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch department');
+    return res.json();
   },
 
   async create(data: DepartmentFormData): Promise<Department> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(),
-      ...data,
-      headName: null,
-      employeeCount: 0,
-      assetCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create department');
+    return res.json();
   },
 
   async update(id: string, data: Partial<Department>): Promise<Department> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const dept = await this.getById(id);
-    if (!dept) throw new Error('Department not found');
-    return { ...dept, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update department');
+    return res.json();
   },
 
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete department');
   },
 };

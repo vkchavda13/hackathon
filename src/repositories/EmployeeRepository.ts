@@ -1,50 +1,51 @@
-import type { Employee, EmployeeFormData } from '@/types';
-import { fetchJsonData, clearCache } from './base';
-import { generateId, simulateDelay } from '@/utils/format';
+// ─── Employee Repository ───────────────────────────────────────────────────────
+// Data access layer for employees. Calls /api/employees (Prisma-backed).
 
-const JSON_PATH = '/json/employees.json';
+import type { Employee, EmployeeFormData } from '@/types';
+
+const BASE = '/api/employees';
 
 export const EmployeeRepository = {
   async getAll(): Promise<Employee[]> {
-    return fetchJsonData<Employee>(JSON_PATH);
+    const res = await fetch(BASE);
+    if (!res.ok) throw new Error('Failed to fetch employees');
+    return res.json();
   },
 
   async getById(id: string): Promise<Employee | null> {
-    const items = await this.getAll();
-    return items.find((e) => e.id === id || e.employeeId === id) ?? null;
+    const res = await fetch(`${BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch employee');
+    return res.json();
   },
 
   async getByDepartment(departmentId: string): Promise<Employee[]> {
-    const items = await this.getAll();
-    return items.filter((e) => e.departmentId === departmentId);
+    const all = await this.getAll();
+    return all.filter((e) => e.departmentId === departmentId);
   },
 
   async create(data: EmployeeFormData): Promise<Employee> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const now = new Date().toISOString();
-    return {
-      id: generateId(),
-      employeeId: `EMP-${Math.floor(1000 + Math.random() * 9000)}`,
-      ...data,
-      departmentName: '',
-      allocatedAssets: 0,
-      avatarUrl: null,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create employee');
+    return res.json();
   },
 
   async update(id: string, data: Partial<Employee>): Promise<Employee> {
-    await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const emp = await this.getById(id);
-    if (!emp) throw new Error('Employee not found');
-    return { ...emp, ...data, updatedAt: new Date().toISOString() };
+    const res = await fetch(`${BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to update employee');
+    return res.json();
   },
 
   async delete(id: string): Promise<void> {
-    await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete employee');
   },
 };
