@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
-import { Shield, Menu, LogOut, ExternalLink } from 'lucide-react';
+import { Shield, Menu } from 'lucide-react';
 import { navGroups } from '@/constants/navigation';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -17,10 +17,68 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
   const pathname = usePathname();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [activeRole, setActiveRole] = useState<'admin' | 'manager' | 'head' | 'employee'>('admin');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user-role') as any;
+    if (saved) setActiveRole(saved);
+
+    const handleRoleChange = () => {
+      const current = localStorage.getItem('user-role') as any;
+      if (current) setActiveRole(current);
+    };
+
+    window.addEventListener('user-role-changed', handleRoleChange);
+    return () => window.removeEventListener('user-role-changed', handleRoleChange);
+  }, []);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
     return pathname.startsWith(href) && (href !== '/' || pathname === '/');
+  };
+
+  // Filter navigation groups based on active simulated role
+  const filteredNavGroups = navGroups.map((group) => {
+    const allowedItems = group.items.filter((item) => {
+      if (activeRole === 'manager') {
+        return !item.href.startsWith('/organization');
+      } else if (activeRole === 'head') {
+        return (
+          !item.href.startsWith('/organization') &&
+          !item.href.startsWith('/assets/register') &&
+          !item.href.startsWith('/maintenance') &&
+          !item.href.startsWith('/audit') &&
+          !item.href.startsWith('/settings')
+        );
+      } else if (activeRole === 'employee') {
+        return (
+          !item.href.startsWith('/organization') &&
+          !item.href.startsWith('/assets/register') &&
+          !item.href.startsWith('/allocation') &&
+          !item.href.startsWith('/audit') &&
+          !item.href.startsWith('/reports') &&
+          !item.href.startsWith('/settings')
+        );
+      }
+      return true;
+    });
+
+    return { ...group, items: allowedItems };
+  }).filter((group) => group.items.length > 0);
+
+  const getRoleLabel = () => {
+    switch (activeRole) {
+      case 'admin':
+        return 'System Admin';
+      case 'manager':
+        return 'Asset Manager';
+      case 'head':
+        return 'Dept Head';
+      case 'employee':
+        return 'Staff Member';
+      default:
+        return 'Employee';
+    }
   };
 
   const drawerContent = (
@@ -32,10 +90,10 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         </Box>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, color: '#f8fafc', lineHeight: 1.2, fontSize: '0.75rem', letterSpacing: '-0.01em' }}>
-            AssetFlow Admin
+            AssetFlow
           </Typography>
-          <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.2 }}>
-            ERP Portal
+          <Typography variant="caption" sx={{ color: '#00A09D', fontSize: '0.625rem', fontWeight: 750, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.2 }}>
+            {getRoleLabel()}
           </Typography>
         </Box>
         {isMobile && (
@@ -46,8 +104,23 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
       </Box>
 
       {/* Navigation */}
-      <Box sx={{ flex: 1, overflowY: 'auto', py: 2, px: 1.5, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        {navGroups.map((group) => (
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          py: 2,
+          px: 1.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2.5,
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {filteredNavGroups.map((group) => (
           <Box key={group.label}>
             <Typography sx={{ px: 1.25, mb: 1, fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#475569' }}>
               {group.label}
@@ -62,15 +135,18 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
                       href={item.href}
                       onClick={isMobile ? onMobileClose : undefined}
                       sx={{
-                        borderRadius: 1,
+                        borderRadius: 0,
                         py: 0.75,
                         px: 1.25,
                         minHeight: 34,
-                        color: active ? '#714B67' : '#94a3b8',
-                        backgroundColor: active ? 'rgba(113, 75, 103, 0.1)' : 'transparent',
+                        color: active ? '#ffffff' : '#94a3b8',
+                        backgroundColor: active ? 'rgba(113, 75, 103, 0.25)' : 'transparent',
+                        borderLeft: active ? '3px solid #00A09D' : '3px solid transparent',
+                        pl: active ? '9px' : '12px',
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                          color: '#f1f5f9',
-                          backgroundColor: active ? 'rgba(113, 75, 103, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                          color: '#ffffff',
+                          backgroundColor: active ? 'rgba(113, 75, 103, 0.35)' : 'rgba(255, 255, 255, 0.05)',
                         },
                       }}
                     >
@@ -93,69 +169,17 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         ))}
       </Box>
 
-      {/* Footer Utility Actions */}
-      <Box sx={{ p: 1.5, borderTop: '1px solid rgba(250, 250, 248, 0.1)', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        <ListItemButton
-          href="/"
-          target="_blank"
-          sx={{
-            borderRadius: 1,
-            py: 0.75,
-            px: 1.25,
-            minHeight: 34,
-            color: '#94a3b8',
-            '&:hover': {
-              color: '#f1f5f9',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 28, color: 'inherit' }}>
-            <ExternalLink size={16} strokeWidth={2.2} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, color: 'inherit' }}>
-                Live Portal
-              </Typography>
-            }
-          />
-        </ListItemButton>
-        <ListItemButton
-          component={Link}
-          href="/login"
-          sx={{
-            borderRadius: 1,
-            py: 0.75,
-            px: 1.25,
-            minHeight: 34,
-            color: '#94a3b8',
-            '&:hover': {
-              color: '#f87171',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 28, color: 'inherit' }}>
-            <LogOut size={16} strokeWidth={2.2} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, color: 'inherit' }}>
-                Logout
-              </Typography>
-            }
-          />
-        </ListItemButton>
+      {/* Footer Branding */}
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(250, 250, 248, 0.1)', textAlign: 'center', shrink: 0 }}>
+        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: '#475569', display: 'block' }}>
+          AssetFlow v1.0.0
+        </Typography>
       </Box>
     </Box>
   );
 
   return (
-    <Box
-      component="nav"
-      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-    >
+    <>
       {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
@@ -164,7 +188,7 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         ModalProps={{ keepMounted: true }} // Better open performance on mobile
         sx={{
           display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: 'none', borderRadius: 0 },
         }}
       >
         {drawerContent}
@@ -175,12 +199,12 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         variant="permanent"
         sx={{
           display: { xs: 'none', md: 'block' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: '1px solid rgba(250, 250, 248, 0.1)' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: '1px solid rgba(250, 250, 248, 0.1)', borderRadius: 0 },
         }}
         open
       >
         {drawerContent}
       </Drawer>
-    </Box>
+    </>
   );
 }

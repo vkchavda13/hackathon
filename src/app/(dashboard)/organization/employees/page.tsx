@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
@@ -32,10 +33,12 @@ const schema = zod.object({
   departmentId: zod.string().min(1, 'Department is required'),
   designation: zod.string().min(1, 'Designation is required'),
   status: zod.enum(['active', 'inactive', 'on_leave', 'terminated']),
+  role: zod.enum(['admin', 'manager', 'head', 'employee']),
   joinDate: zod.string().min(1, 'Join date is required'),
 });
 
 export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => void }) {
+  const router = useRouter();
   const { data: employees = [], isLoading } = useEmployees();
   const { data: departments = [] } = useDepartments();
   const createMutation = useCreateEmployee();
@@ -64,6 +67,7 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
         departmentId: emp.departmentId,
         designation: emp.designation,
         status: emp.status,
+        role: emp.role,
         joinDate: emp.joinDate,
       });
     } else {
@@ -76,6 +80,7 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
         departmentId: '',
         designation: '',
         status: 'active',
+        role: 'employee',
         joinDate: new Date().toISOString().split('T')[0],
       });
     }
@@ -121,15 +126,15 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
       headerName: 'Employee',
       flex: 1.5,
       renderCell: (params: any) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', fontWeight: 600, backgroundColor: '#2563eb' }}>
             {getInitials(`${params.row.firstName} ${params.row.lastName}`)}
           </Avatar>
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineHeight: 1.2 }}>
               {params.row.firstName} {params.row.lastName}
             </Typography>
-            <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+            <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem', lineHeight: 1.2, mt: 0.25 }}>
               {params.row.employeeId}
             </Typography>
           </Box>
@@ -139,6 +144,27 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
     { field: 'email', headerName: 'Email', flex: 1.5 },
     { field: 'departmentName', headerName: 'Department', flex: 1.2 },
     { field: 'designation', headerName: 'Designation', flex: 1.2 },
+    {
+      field: 'role',
+      headerName: 'Role',
+      flex: 1,
+      renderCell: (params: any) => {
+        const labels = { admin: 'Admin', manager: 'Asset Manager', head: 'Dept Head', employee: 'Employee' };
+        const roleVal = params.value as 'admin' | 'manager' | 'head' | 'employee';
+        return (
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              color: roleVal === 'admin' ? '#714B67' : roleVal === 'manager' ? '#00A09D' : roleVal === 'head' ? '#d97706' : '#64748b',
+            }}
+          >
+            {labels[roleVal] || params.value}
+          </Typography>
+        );
+      },
+    },
     {
       field: 'status',
       headerName: 'Status',
@@ -199,6 +225,7 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
           rows={filtered}
           columns={columns}
           loading={isLoading}
+          onRowClick={(params) => router.push(`/organization/employees/${params.row.id}`)}
         />
 
         {/* Dialog Form */}
@@ -233,6 +260,20 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormField name="designation" label="Designation" control={control} required />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <SelectField
+                name="role"
+                label="Simulated Role (Promotion)"
+                control={control}
+                required
+                options={[
+                  { label: 'System Administrator (Admin)', value: 'admin' },
+                  { label: 'Asset Manager (Manager)', value: 'manager' },
+                  { label: 'Department Head (Head)', value: 'head' },
+                  { label: 'Staff Member (Employee)', value: 'employee' },
+                ]}
+              />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <SelectField

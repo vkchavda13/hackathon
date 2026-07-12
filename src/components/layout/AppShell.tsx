@@ -10,7 +10,6 @@ const DRAWER_WIDTH = 220;
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -33,6 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Box
         sx={{
           flexGrow: 1,
+          marginLeft: { md: `${DRAWER_WIDTH}px` },
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           display: 'flex',
           flexDirection: 'column',

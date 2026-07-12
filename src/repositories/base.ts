@@ -20,6 +20,10 @@ export async function fetchJsonData<T>(path: string): Promise<T[]> {
   return data as T[];
 }
 
+export function saveJsonData<T>(path: string, items: T[]): void {
+  dataCache.set(path, items);
+}
+
 export function clearCache(path?: string): void {
   if (path) {
     dataCache.delete(path);

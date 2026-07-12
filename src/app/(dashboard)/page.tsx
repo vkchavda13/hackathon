@@ -11,21 +11,64 @@ import BarChart from '@/components/charts/BarChart';
 import PieChart from '@/components/charts/PieChart';
 import { useAssetStats, useAssets } from '@/hooks/useAssets';
 import { useNotifications, useBookings } from '@/hooks/useModules';
+import { DashboardSkeleton } from '@/components/common/SkeletonLoader';
 import Link from 'next/link';
 import React from 'react';
 
 export default function DashboardPage({ onMenuToggle }: { onMenuToggle?: () => void }) {
-  const { data: stats } = useAssetStats();
-  const { data: assets } = useAssets();
-  const { data: notifications } = useNotifications();
-  const { data: bookings } = useBookings();
+  const { data: stats, isLoading: statsLoading } = useAssetStats();
+  const { data: assets, isLoading: assetsLoading } = useAssets();
+  const { data: notifications = [] } = useNotifications();
+  const { data: bookings = [] } = useBookings();
+
+  if (statsLoading || assetsLoading) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <PageHeader title="Dashboard" onMenuToggle={onMenuToggle} />
+        <PageContainer>
+          <DashboardSkeleton />
+        </PageContainer>
+      </Box>
+    );
+  }
 
   // Metrics mapping
   const metrics = [
-    { label: 'Total Assets', value: stats?.total ?? 30, icon: <Package size={18} />, iconBg: '#f5f3f7', iconColor: '#714B67' },
-    { label: 'Available', value: stats?.available ?? 12, icon: <CheckCircle2 size={18} />, iconBg: '#e6f6f6', iconColor: '#00A09D' },
-    { label: 'Allocated', value: stats?.allocated ?? 15, icon: <Users size={18} />, iconBg: '#e0f2fe', iconColor: '#0284c7' },
-    { label: 'Maintenance', value: stats?.maintenance ?? 3, icon: <Wrench size={18} />, iconBg: '#fef3c7', iconColor: '#b45309' },
+    {
+      label: 'Total Assets',
+      value: stats?.total ?? 30,
+      icon: <Package size={18} />,
+      iconBg: '#f5f3f7',
+      iconColor: '#714B67',
+      trend: { value: '+12% MoM', isPositive: true },
+      description: 'Active devices in database',
+    },
+    {
+      label: 'Available',
+      value: stats?.available ?? 12,
+      icon: <CheckCircle2 size={18} />,
+      iconBg: '#e6f6f6',
+      iconColor: '#00A09D',
+      description: 'Ready to allocate to staff',
+    },
+    {
+      label: 'Allocated',
+      value: stats?.allocated ?? 15,
+      icon: <Users size={18} />,
+      iconBg: '#e0f2fe',
+      iconColor: '#0284c7',
+      trend: { value: '+8% MoM', isPositive: true },
+      description: 'Deployed in departments',
+    },
+    {
+      label: 'Maintenance',
+      value: stats?.maintenance ?? 3,
+      icon: <Wrench size={18} />,
+      iconBg: '#fef3c7',
+      iconColor: '#b45309',
+      trend: { value: '-25% YoY', isPositive: true },
+      description: 'In service pipeline',
+    },
   ];
 
   // Activities list matching Screen 2
@@ -79,50 +122,48 @@ export default function DashboardPage({ onMenuToggle }: { onMenuToggle?: () => v
     count,
   }));
 
+  const dashboardActions = (
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Button
+        component={Link}
+        href="/assets/register"
+        variant="contained"
+        color="primary"
+        startIcon={<PlusCircle size={14} />}
+        sx={{ height: 32, py: 0, fontSize: '0.7rem' }}
+      >
+        Register Asset
+      </Button>
+      <Button
+        component={Link}
+        href="/booking"
+        variant="outlined"
+        startIcon={<Calendar size={14} />}
+        sx={{ height: 32, py: 0, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#475569', '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' } }}
+      >
+        Book Resource
+      </Button>
+      <Button
+        component={Link}
+        href="/maintenance"
+        variant="outlined"
+        startIcon={<Wrench size={14} />}
+        sx={{ height: 32, py: 0, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#475569', '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' } }}
+      >
+        Raise Request
+      </Button>
+    </Box>
+  );
+
   return (
     <>
       <PageHeader
         title="Dashboard"
         onMenuToggle={onMenuToggle}
+        breadcrumbs={[{ label: 'Home' }, { label: 'Dashboard' }]}
+        actionButtons={dashboardActions}
       />
       <PageContainer>
-        {/* Flagged Alert Banner matching Screen 2 */}
-        <Alert severity="error" sx={{ border: '1px solid #fecaca', borderRadius: 1 }}>
-          <AlertTitle sx={{ fontWeight: 600 }}>Action Required</AlertTitle>
-          3 assets of IT department marked for review — Flagged for follow-up.
-        </Alert>
-
-        {/* Action Button Row */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-          <Button
-            component={Link}
-            href="/assets/register"
-            variant="contained"
-            color="primary"
-            startIcon={<PlusCircle size={16} />}
-            sx={{ height: 36 }}
-          >
-            Register Asset
-          </Button>
-          <Button
-            component={Link}
-            href="/booking"
-            variant="outlined"
-            startIcon={<Calendar size={16} />}
-            sx={{ height: 36, borderColor: '#e2e8f0', color: '#475569', '&:hover': { borderColor: '#cbd5e1', backgroundColor: '#f8fafc' } }}
-          >
-            Book Resource
-          </Button>
-          <Button
-            component={Link}
-            href="/maintenance"
-            variant="outlined"
-            startIcon={<Wrench size={16} />}
-            sx={{ height: 36, borderColor: '#e2e8f0', color: '#475569', '&:hover': { borderColor: '#cbd5e1', backgroundColor: '#f8fafc' } }}
-          >
-            Raise Request
-          </Button>
-        </Box>
 
         {/* Stats metrics */}
         <KPIGrid metrics={metrics} />
@@ -147,12 +188,22 @@ export default function DashboardPage({ onMenuToggle }: { onMenuToggle?: () => v
                   dataKey="count"
                   xAxisKey="name"
                   height={220}
+                  colors={['#714B67', '#00A09D', '#0284c7', '#d97706', '#16a34a', '#475569']}
                 />
               </Grid>
             </Grid>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <TimelineCard title="Recent Activity" items={timelineItems} />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Flagged Alert Banner relocated from top */}
+              <Alert severity="error" sx={{ border: '1px solid #fecaca', borderRadius: 1.5 }}>
+                <AlertTitle sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>Action Required</AlertTitle>
+                <Typography variant="body2" sx={{ fontSize: '0.725rem', color: '#7f1d1d', lineHeight: 1.4 }}>
+                  3 assets of IT department marked for review — Flagged for follow-up.
+                </Typography>
+              </Alert>
+              <TimelineCard title="Recent Activity" items={timelineItems} />
+            </Box>
           </Grid>
         </Grid>
       </PageContainer>

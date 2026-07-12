@@ -19,7 +19,7 @@ export default function LoadingState({ message = 'Loading details…' }: Loading
         gap: 2,
       }}
     >
-      <CircularProgress size={24} thickness={4} sx={{ color: '#2563eb' }} />
+      <CircularProgress size={24} thickness={4} color="primary" />
       <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.75rem' }}>
         {message}
       </Typography>
