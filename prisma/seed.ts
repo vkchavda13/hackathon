@@ -11,6 +11,13 @@ try {
   console.warn('Warning: Failed to run prisma db push. Database might already exist or URL is not reachable yet.', error);
 }
 
+import crypto from 'crypto';
+
+const SALT = 'assetflow-secure-salt-2026';
+function hashPassword(password: string): string {
+  return crypto.createHmac('sha256', SALT).update(password).digest('hex');
+}
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -92,6 +99,8 @@ async function main() {
         departmentName: emp.departmentName,
         designation: emp.designation,
         status: emp.status,
+        role: emp.role || 'employee',
+        password: hashPassword('password123'),
         joinDate: emp.joinDate,
         allocatedAssets: emp.allocatedAssets,
         avatarUrl: emp.avatarUrl,

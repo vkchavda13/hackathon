@@ -188,7 +188,6 @@ export default function DashboardPage({ onMenuToggle }: { onMenuToggle?: () => v
                   dataKey="count"
                   xAxisKey="name"
                   height={220}
-                  colors={['#714B67', '#00A09D', '#0284c7', '#d97706', '#16a34a', '#475569']}
                 />
               </Grid>
             </Grid>

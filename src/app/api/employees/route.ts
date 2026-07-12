@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { hashPassword } from '@/utils/auth';
 
 export async function GET() {
   try {
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
         departmentName,
         designation: body.designation,
         status: body.status || 'active',
+        role: body.role || 'employee',
+        password: hashPassword('password123'),
         joinDate: body.joinDate,
         avatarUrl: body.avatarUrl || null,
         allocatedAssets: 0,

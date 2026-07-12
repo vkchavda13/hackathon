@@ -20,7 +20,7 @@ export default function BarChart({
   data,
   dataKey,
   xAxisKey,
-  color = '#2563eb',
+  color = '#714B67',
   colors,
   height = 300,
 }: BarChartProps) {

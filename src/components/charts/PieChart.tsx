@@ -14,7 +14,7 @@ interface PieChartProps {
   height?: number;
 }
 
-const DEFAULT_COLORS = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#8b5cf6', '#06b6d4'];
+const DEFAULT_COLORS = ['#714B67', '#00A09D', '#d97706', '#16a34a', '#8b5cf6', '#db2777', '#06b6d4'];
 
 export default function PieChart({
   title,

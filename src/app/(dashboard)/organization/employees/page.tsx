@@ -33,7 +33,7 @@ const schema = zod.object({
   departmentId: zod.string().min(1, 'Department is required'),
   designation: zod.string().min(1, 'Designation is required'),
   status: zod.enum(['active', 'inactive', 'on_leave', 'terminated']),
-  role: zod.enum(['admin', 'manager', 'head', 'employee']),
+  role: zod.enum(['admin', 'manager', 'head', 'employee', 'auditor']),
   joinDate: zod.string().min(1, 'Join date is required'),
 });
 
@@ -149,15 +149,15 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
       headerName: 'Role',
       flex: 1,
       renderCell: (params: any) => {
-        const labels = { admin: 'Admin', manager: 'Asset Manager', head: 'Dept Head', employee: 'Employee' };
-        const roleVal = params.value as 'admin' | 'manager' | 'head' | 'employee';
+        const labels = { admin: 'Admin', manager: 'Asset Manager', head: 'Dept Head', employee: 'Employee', auditor: 'Auditor' };
+        const roleVal = params.value as 'admin' | 'manager' | 'head' | 'employee' | 'auditor';
         return (
           <Typography
             variant="body2"
             sx={{
               fontWeight: 700,
               fontSize: '0.75rem',
-              color: roleVal === 'admin' ? '#714B67' : roleVal === 'manager' ? '#00A09D' : roleVal === 'head' ? '#d97706' : '#64748b',
+              color: roleVal === 'admin' ? '#714B67' : roleVal === 'manager' ? '#00A09D' : roleVal === 'head' ? '#d97706' : roleVal === 'auditor' ? '#2563eb' : '#64748b',
             }}
           >
             {labels[roleVal] || params.value}
@@ -272,6 +272,7 @@ export default function EmployeesPage({ onMenuToggle }: { onMenuToggle?: () => v
                   { label: 'Asset Manager (Manager)', value: 'manager' },
                   { label: 'Department Head (Head)', value: 'head' },
                   { label: 'Staff Member (Employee)', value: 'employee' },
+                  { label: 'Auditor (Auditor)', value: 'auditor' },
                 ]}
               />
             </Grid>

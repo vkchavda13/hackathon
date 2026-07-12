@@ -58,6 +58,8 @@ export default function AuditPage({ onMenuToggle }: { onMenuToggle?: () => void 
     });
   };
 
+  const totalDiscrepancies = auditCycles.reduce((sum, c) => sum + c.discrepancyCount + c.missingCount, 0);
+
   const filtered = auditCycles.filter((cycle) =>
     cycle.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -120,25 +122,27 @@ export default function AuditPage({ onMenuToggle }: { onMenuToggle?: () => void 
         onActionClick={() => setFormOpen(true)}
       />
       <PageContainer>
-        {/* Warning block matching Screen 6 */}
-        <Alert
-          severity="warning"
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              variant="outlined"
-              startIcon={<DescriptionIcon />}
-              href="/reports"
-            >
-              Generate Report
-            </Button>
-          }
-          sx={{ border: '1px solid #fef3c7', borderRadius: 1 }}
-        >
-          <AlertTitle sx={{ fontWeight: 600 }}>Action Required</AlertTitle>
-          3 assets flagged as missing/damaged — discrepancy reports generated automatically.
-        </Alert>
+        {/* Dynamic warning block matching Screen 6 */}
+        {totalDiscrepancies > 0 && (
+          <Alert
+            severity="warning"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                variant="outlined"
+                startIcon={<DescriptionIcon />}
+                href="/reports"
+              >
+                Generate Report
+              </Button>
+            }
+            sx={{ border: '1px solid #fef3c7', borderRadius: 1, mb: 3 }}
+          >
+            <AlertTitle sx={{ fontWeight: 600 }}>Action Required</AlertTitle>
+            {totalDiscrepancies} assets flagged as missing/damaged — discrepancy reports generated automatically.
+          </Alert>
+        )}
 
         <SearchToolbar
           searchPlaceholder="Search audit cycles…"

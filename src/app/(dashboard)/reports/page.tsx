@@ -12,7 +12,7 @@ import DataGrid from '@/components/tables/DataGrid';
 import StatusChip from '@/components/common/StatusChip';
 import FormDialog from '@/components/dialogs/FormDialog';
 import { useAssets } from '@/hooks/useAssets';
-import { useReports } from '@/hooks/useModules';
+import { useReports, useCreateReport } from '@/hooks/useModules';
 import { formatDate, formatCurrency } from '@/utils/format';
 import type { Report } from '@/types';
 import React from 'react';
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const { data: assets = [] } = useAssets();
   const { data: reports = [], isLoading } = useReports();
+  const createReport = useCreateReport();
 
   const [exportOpen, setExportOpen] = useState(false);
   const [reportType, setReportType] = useState('asset_summary');
@@ -80,17 +81,36 @@ export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => voi
       headerAlign: 'right' as const,
       renderCell: (params: any) => {
         const handleDownload = () => {
-          const csvContent = "Asset Tag,Asset Name,Category,Department,Status,Condition\n" +
-            assets.slice(0, 5).map(a => `${a.assetTag},"${a.name}",${a.categoryName || '—'},${a.departmentName || '—'},${a.status},${a.condition}`).join("\n");
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.setAttribute("href", url);
-          link.setAttribute("download", `${params.row.name.toLowerCase().replace(/ /g, '_')}.${params.row.format}`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          toast.success(`Downloaded report: ${params.row.name}`);
+          if (params.row.format === 'pdf') {
+            const pdfBase64 = "JVBERi0xLjQKMSAwIG9iagogIDw8L1R5cGUgL0NhdGFsb2cKICAgIC9QYWdlcyAyIDAgUgoKICA+PgplbmRvYmoKMiAwIG9iagogIDw8L1R5cGUgL1BhZ2VzCiAgICAvS2lkcyBbMyAwIFJdCiAgICAvQ291bnQgMQogID4+CmVuZG9iagozIDAgb2JqCiAgPDwvVHlwZSAvUGFnZQogICAgL1BhcmVudCAyIDAgUgogICAgL1Jlc291cmNlcyA8PC9Gb250IDw8L0YxIDQgMCBSPj4+PgogICAgL01lZGlhQm94IFswIDAgNTk1IDg0Ml0KICAgIC9Db250ZW50cyA1IDAgUgoKICA+PgplbmRvYmoKNCAwIG9iagogIDw8L1R5cGUgL0ZvbnQKICAgIC9TdWJ0eXBlIC9UeXBlMQogICAgL0Jhc2VGb250IC9IZWx2ZXRpY2EKICAvPgplbmRvYmoKNSAwIG9iagogIDw8L0xlbmd0aCA0ND4+CnN0cmVhbQpCVAovRjEgMTIgVGYKNTAgNzAwIFRkCihBc3NldEZsb3cgRXhwb3J0ZWQgQXVkaXQgUmVwb3J0KSBUagogRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTcgMDAwMDAgbiAKMDAwMDAwMDA4MSAwMDAwMCBuIAowMDAwMDAwMTQwIDAwMDAwIG4gCjAwMDAwMDAyNzggMDAwMDAgbiAKMDAwMDAwMDMzNiAwMDAwMCBuIAp0cmFpbGVyCiAgPDwvU2l6ZSA2CiAgICAvUm9vdCAxIDAgUgoKICA+PgpzdGFydHhyZWYKNDI5CiUlRU9GCg==";
+            const byteCharacters = atob(pdfBase64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${params.row.name.toLowerCase().replace(/ /g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success(`Downloaded PDF report: ${params.row.name}`);
+          } else {
+            const csvContent = "Asset Tag,Asset Name,Category,Department,Status,Condition\n" +
+              assets.slice(0, 5).map(a => `${a.assetTag},"${a.name}",${a.categoryName || '—'},${a.departmentName || '—'},${a.status},${a.condition}`).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${params.row.name.toLowerCase().replace(/ /g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success(`Downloaded CSV report: ${params.row.name}`);
+          }
         };
         return (
           <IconButton size="small" color="primary" title="Download Report" onClick={handleDownload}>
@@ -126,6 +146,11 @@ export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => voi
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Save report in PostgreSQL history
+    const reportName = `${reportType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} - ${new Date().toLocaleDateString('en-IN')}`;
+    createReport.mutate({ type: reportType, format: reportFormat, name: reportName });
+    
     toast.success("Custom report exported successfully!");
   };
 

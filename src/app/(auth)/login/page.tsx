@@ -6,6 +6,7 @@ import { Box, Card, CardContent, Typography, TextField, Button, InputAdornment, 
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,13 +15,42 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to authenticate');
+      }
+
+      // Save token, role, and profile details to localStorage
+      localStorage.setItem('user-token', data.token);
+      localStorage.setItem('user-role', data.user.role);
+      localStorage.setItem('user-info', JSON.stringify(data.user));
+      // Set 24 hours expiry time
+      localStorage.setItem('user-token-expiry', String(Date.now() + 24 * 60 * 60 * 1000));
+
+      // Trigger event to notify layout components
+      window.dispatchEvent(new Event('user-role-changed'));
+
+      toast.success('Logged in successfully!');
       router.push('/');
-    }, 400);
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -140,15 +170,15 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Signup informational card matching Screen 1 */}
+        {/* Signup informational card */}
         <Card sx={{ mt: 3, border: '1px dashed #cbd5e1', borderRadius: 1.5, backgroundColor: 'rgba(241, 245, 249, 0.5)' }}>
           <CardContent sx={{ p: '20px !important', textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.75rem', fontWeight: 650, mb: 2 }}>
-              New here? Sign up creates an employee account. Admin roles are assigned later by IT managers.
+              New here? Create an account to register as a member of your company's organization.
             </Typography>
             <Button
               component={Link}
-              href="/forgot-password" // Routing placeholders for demo
+              href="/signup"
               variant="outlined"
               fullWidth
               sx={{ height: 34, borderColor: '#cbd5e1', color: '#475569', '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f1f5f9' } }}

@@ -63,6 +63,7 @@ export async function PUT(
         departmentName: departmentName,
         designation: body.designation,
         status: body.status,
+        role: body.role,
         joinDate: body.joinDate,
         avatarUrl: body.avatarUrl,
       },

@@ -116,6 +116,13 @@ export function useMarkAllNotificationsRead() {
 export function useReports() {
   return useQuery({ queryKey: queryKeys.reports.all, queryFn: () => ReportRepository.getAll() });
 }
+export function useCreateReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ type, format, name }: { type: string; format: string; name?: string }) => ReportRepository.generate(type, format, name),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.reports.all }); },
+  });
+}
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 export function useSettings() {

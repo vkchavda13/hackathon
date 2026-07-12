@@ -94,8 +94,36 @@ export default function EmployeeProfilePage({ onMenuToggle }: { onMenuToggle?: (
                   {employee.designation}
                 </Typography>
 
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 3, display: 'flex', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <StatusChip status={employee.status} type="employee" />
+                  {(() => {
+                    const getRoleBadgeStyle = (role: string) => {
+                      switch (role) {
+                        case 'admin': return { bg: 'rgba(113, 75, 103, 0.08)', text: '#714B67', border: 'rgba(113, 75, 103, 0.15)', label: 'Admin' };
+                        case 'manager': return { bg: 'rgba(0, 160, 157, 0.08)', text: '#00A09D', border: 'rgba(0, 160, 157, 0.15)', label: 'Manager' };
+                        case 'head': return { bg: 'rgba(217, 119, 6, 0.08)', text: '#d97706', border: 'rgba(217, 119, 6, 0.15)', label: 'Dept Head' };
+                        default: return { bg: 'rgba(71, 85, 105, 0.08)', text: '#475569', border: 'rgba(71, 85, 105, 0.15)', label: 'Employee' };
+                      }
+                    };
+                    const roleStyle = getRoleBadgeStyle(employee.role);
+                    return (
+                      <Box
+                        sx={{
+                          px: 1.25,
+                          py: 0.25,
+                          fontSize: '0.625rem',
+                          fontWeight: 650,
+                          borderRadius: 1,
+                          backgroundColor: roleStyle.bg,
+                          color: roleStyle.text,
+                          border: `1px solid ${roleStyle.border}`,
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        {roleStyle.label}
+                      </Box>
+                    );
+                  })()}
                 </Box>
 
                 <Divider sx={{ width: '100%', mb: 3 }} />
@@ -233,9 +261,9 @@ export default function EmployeeProfilePage({ onMenuToggle }: { onMenuToggle?: (
                   {tabIndex === 1 && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {employeeBookings.length > 0 ? (
-                        employeeBookings.map((b) => (
-                          <Card key={b.id} sx={{ border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-                            <CardContent sx={{ p: '16px !important', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        employeeBookings.map((b, idx) => (
+                          <Box key={b.id}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                                   {b.assetName}
@@ -243,13 +271,14 @@ export default function EmployeeProfilePage({ onMenuToggle }: { onMenuToggle?: (
                                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
                                   Purpose: {b.purpose}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.25 }}>
                                   Dates: {formatDate(b.startDate)} to {formatDate(b.endDate)}
                                 </Typography>
                               </Box>
                               <StatusChip status={b.status} type="booking" />
-                            </CardContent>
-                          </Card>
+                            </Box>
+                            {idx < employeeBookings.length - 1 && <Divider sx={{ mt: 2 }} />}
+                          </Box>
                         ))
                       ) : (
                         <Typography variant="body2" sx={{ color: '#94a3b8', py: 6, textAlign: 'center' }}>
@@ -263,9 +292,9 @@ export default function EmployeeProfilePage({ onMenuToggle }: { onMenuToggle?: (
                   {tabIndex === 2 && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {employeeAllocations.length > 0 ? (
-                        employeeAllocations.map((al) => (
-                          <Card key={al.id} sx={{ border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-                            <CardContent sx={{ p: '16px !important' }}>
+                        employeeAllocations.map((al, idx) => (
+                          <Box key={al.id}>
+                            <Box>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#714B67' }}>
                                   {al.assetName} ({al.assetTag})
@@ -278,12 +307,13 @@ export default function EmployeeProfilePage({ onMenuToggle }: { onMenuToggle?: (
                                 Allocated on: {formatDate(al.createdAt)}
                               </Typography>
                               {al.returnDate && (
-                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.25 }}>
                                   Returned on: {formatDate(al.returnDate)}
                                 </Typography>
                               )}
-                            </CardContent>
-                          </Card>
+                            </Box>
+                            {idx < employeeAllocations.length - 1 && <Divider sx={{ mt: 2 }} />}
+                          </Box>
                         ))
                       ) : (
                         <Typography variant="body2" sx={{ color: '#94a3b8', py: 6, textAlign: 'center' }}>

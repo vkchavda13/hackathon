@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
-import { Shield, Menu } from 'lucide-react';
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, IconButton, useTheme, useMediaQuery, Button } from '@mui/material';
+import { Shield, Menu as MenuIcon } from 'lucide-react';
 import { navGroups } from '@/constants/navigation';
 import React, { useState, useEffect } from 'react';
 
@@ -17,7 +17,7 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
   const pathname = usePathname();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [activeRole, setActiveRole] = useState<'admin' | 'manager' | 'head' | 'employee'>('admin');
+  const [activeRole, setActiveRole] = useState<'admin' | 'manager' | 'head' | 'employee' | 'auditor'>('admin');
 
   useEffect(() => {
     const saved = localStorage.getItem('user-role') as any;
@@ -37,27 +37,33 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
     return pathname.startsWith(href) && (href !== '/' || pathname === '/');
   };
 
-  // Filter navigation groups based on active simulated role
+  // Filter navigation groups based on active role
   const filteredNavGroups = navGroups.map((group) => {
     const allowedItems = group.items.filter((item) => {
-      if (activeRole === 'manager') {
-        return !item.href.startsWith('/organization');
+      if (activeRole === 'admin') {
+        return true;
+      } else if (activeRole === 'manager') {
+        return !item.href.startsWith('/organization') && !item.href.startsWith('/settings');
       } else if (activeRole === 'head') {
         return (
-          !item.href.startsWith('/organization') &&
-          !item.href.startsWith('/assets/register') &&
-          !item.href.startsWith('/maintenance') &&
-          !item.href.startsWith('/audit') &&
-          !item.href.startsWith('/settings')
+          item.href === '/' ||
+          item.href.startsWith('/assets') && !item.href.startsWith('/assets/register') ||
+          item.href.startsWith('/booking') ||
+          item.href.startsWith('/allocation')
+        );
+      } else if (activeRole === 'auditor') {
+        return (
+          item.href === '/' ||
+          item.href.startsWith('/assets') && !item.href.startsWith('/assets/register') ||
+          item.href.startsWith('/audit') ||
+          item.href.startsWith('/reports')
         );
       } else if (activeRole === 'employee') {
         return (
-          !item.href.startsWith('/organization') &&
-          !item.href.startsWith('/assets/register') &&
-          !item.href.startsWith('/allocation') &&
-          !item.href.startsWith('/audit') &&
-          !item.href.startsWith('/reports') &&
-          !item.href.startsWith('/settings')
+          item.href === '/' ||
+          item.href.startsWith('/assets') && !item.href.startsWith('/assets/register') ||
+          item.href.startsWith('/booking') ||
+          item.href.startsWith('/maintenance')
         );
       }
       return true;
@@ -74,6 +80,8 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         return 'Asset Manager';
       case 'head':
         return 'Dept Head';
+      case 'auditor':
+        return 'Auditor';
       case 'employee':
         return 'Staff Member';
       default:
@@ -98,7 +106,7 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         </Box>
         {isMobile && (
           <IconButton onClick={onMobileClose} sx={{ color: '#64748b' }}>
-            <Menu size={18} />
+            <MenuIcon size={18} />
           </IconButton>
         )}
       </Box>
@@ -169,9 +177,36 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
         ))}
       </Box>
 
-      {/* Footer Branding */}
-      <Box sx={{ p: 2, borderTop: '1px solid rgba(250, 250, 248, 0.1)', textAlign: 'center', shrink: 0 }}>
-        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: '#475569', display: 'block' }}>
+      {/* Branding Footer */}
+      <Box sx={{ p: 1.5, borderTop: '1px solid rgba(250, 250, 248, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, shrink: 0 }}>
+        <Button
+          onClick={() => {
+            localStorage.removeItem('user-token');
+            localStorage.removeItem('user-role');
+            localStorage.removeItem('user-info');
+            localStorage.removeItem('user-token-expiry');
+            window.location.href = '/login';
+          }}
+          variant="outlined"
+          color="error"
+          fullWidth
+          size="small"
+          sx={{
+            py: 0.5,
+            fontSize: '0.65rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            borderColor: 'rgba(239, 68, 68, 0.4)',
+            color: '#ef4444',
+            '&:hover': {
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            }
+          }}
+        >
+          Sign Out
+        </Button>
+        <Typography variant="caption" sx={{ fontSize: '0.55rem', color: '#64748b', display: 'block', mt: 0.5 }}>
           AssetFlow v1.0.0
         </Typography>
       </Box>
@@ -208,3 +243,5 @@ export default function Sidebar({ mobileOpen, onMobileClose, drawerWidth }: Side
     </>
   );
 }
+
+
