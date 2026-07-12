@@ -105,11 +105,11 @@ export default function CategoriesPage({ onMenuToggle }: { onMenuToggle?: () => 
 
   const columns = [
     { field: 'name', headerName: 'Category', flex: 1.5, renderCell: (params: any) => (
-      <Box sx={{ py: 0.5 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineHeight: 1.2 }}>
           {params.row.name}
         </Typography>
-        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem', lineHeight: 1.2, mt: 0.25 }}>
           {params.row.code}
         </Typography>
       </Box>

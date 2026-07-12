@@ -1,8 +1,7 @@
 // ─── Asset Repository ─────────────────────────────────────────────────────────
-// Data access layer for assets. Replace internals with Prisma later.
 
 import type { Asset, AssetFormData, AssetStatus } from '@/types';
-import { fetchJsonData, clearCache } from './base';
+import { fetchJsonData, saveJsonData } from './base';
 import { generateId, simulateDelay } from '@/utils/format';
 
 const JSON_PATH = '/json/assets.json';
@@ -34,35 +33,43 @@ export const AssetRepository = {
 
   async create(data: AssetFormData): Promise<Asset> {
     await simulateDelay(300);
-    clearCache(JSON_PATH);
+    const assets = await this.getAll();
     const now = new Date().toISOString();
-    return {
+    const newAsset: Asset = {
       id: generateId(),
       assetTag: `AF-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`,
       ...data,
       status: 'available',
       currentValue: data.purchasePrice,
-      categoryName: '',
-      departmentName: '',
+      categoryName: 'Laptops',
+      departmentName: 'Information Technology',
       assignedToId: null,
       assignedToName: null,
       imageUrl: null,
       createdAt: now,
       updatedAt: now,
     };
+    assets.push(newAsset);
+    saveJsonData(JSON_PATH, assets);
+    return newAsset;
   },
 
   async update(id: string, data: Partial<Asset>): Promise<Asset> {
     await simulateDelay(300);
-    clearCache(JSON_PATH);
-    const asset = await this.getById(id);
-    if (!asset) throw new Error('Asset not found');
-    return { ...asset, ...data, updatedAt: new Date().toISOString() };
+    const assets = await this.getAll();
+    const idx = assets.findIndex((a) => a.id === id);
+    if (idx === -1) throw new Error('Asset not found');
+    const updated = { ...assets[idx], ...data, updatedAt: new Date().toISOString() };
+    assets[idx] = updated;
+    saveJsonData(JSON_PATH, assets);
+    return updated;
   },
 
   async delete(id: string): Promise<void> {
     await simulateDelay(200);
-    clearCache(JSON_PATH);
+    const assets = await this.getAll();
+    const filtered = assets.filter((a) => a.id !== id);
+    saveJsonData(JSON_PATH, filtered);
   },
 
   async getStats(): Promise<{

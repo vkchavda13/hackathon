@@ -75,7 +75,7 @@ const theme = createTheme({
   },
 
   shape: {
-    borderRadius: 6,
+    borderRadius: 8,
   },
 
   spacing: 8,
@@ -126,7 +126,7 @@ const theme = createTheme({
       },
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 8,
           fontWeight: 500,
           fontSize: '0.75rem',
           padding: '6px 12px',
@@ -150,7 +150,7 @@ const theme = createTheme({
       defaultProps: { size: 'small' },
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 8,
           padding: 6,
           color: '#94a3b8',
           '&:hover': {
@@ -170,7 +170,7 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             fontSize: '0.8125rem',
-            borderRadius: 6,
+            borderRadius: 8,
             '& fieldset': {
               borderColor: '#e2e8f0',
             },
@@ -195,7 +195,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontSize: '0.8125rem',
-          borderRadius: 6,
+          borderRadius: 8,
         },
       },
     },
@@ -207,7 +207,7 @@ const theme = createTheme({
           fontSize: '0.625rem',
           fontWeight: 500,
           height: 22,
-          borderRadius: 11,
+          borderRadius: 6,
         },
         label: {
           padding: '0 8px',
@@ -218,7 +218,7 @@ const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: 8,
+          borderRadius: 12,
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         },
       },

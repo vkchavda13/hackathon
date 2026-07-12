@@ -3,6 +3,7 @@
 import type { AuditFields } from './common';
 
 export type EmployeeStatus = 'active' | 'inactive' | 'on_leave' | 'terminated';
+export type EmployeeRole = 'admin' | 'manager' | 'head' | 'employee';
 
 export interface Employee extends AuditFields {
   id: string;
@@ -15,6 +16,7 @@ export interface Employee extends AuditFields {
   departmentName: string;
   designation: string;
   status: EmployeeStatus;
+  role: EmployeeRole;
   joinDate: string;
   allocatedAssets: number;
   avatarUrl: string | null;
@@ -28,5 +30,6 @@ export interface EmployeeFormData {
   departmentId: string;
   designation: string;
   status: EmployeeStatus;
+  role: EmployeeRole;
   joinDate: string;
 }

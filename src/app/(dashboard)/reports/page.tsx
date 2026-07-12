@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Button, Grid, Card, CardContent, Typography, MenuItem, Select, FormControl, InputLabel, IconButton } from '@mui/material';
-import { Download, FileText, AlertTriangle } from 'lucide-react';
+import { Download } from 'lucide-react';
 import PageContainer from '@/components/layout/PageContainer';
 import PageHeader from '@/components/layout/PageHeader';
 import SectionHeader from '@/components/common/SectionHeader';
@@ -16,6 +16,7 @@ import { useReports } from '@/hooks/useModules';
 import { formatDate, formatCurrency } from '@/utils/format';
 import type { Report } from '@/types';
 import React from 'react';
+import { toast } from 'sonner';
 
 export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const { data: assets = [] } = useAssets();
@@ -53,11 +54,11 @@ export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => voi
 
   const columns = [
     { field: 'name', headerName: 'Report Name', flex: 1.5, renderCell: (params: any) => (
-      <Box sx={{ py: 0.5 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineHeight: 1.2 }}>
           {params.row.name}
         </Typography>
-        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem', lineHeight: 1.2, mt: 0.25 }}>
           Type: {params.row.type.replace('_', ' ').toUpperCase()}
         </Typography>
       </Box>
@@ -77,17 +78,55 @@ export default function ReportsPage({ onMenuToggle }: { onMenuToggle?: () => voi
       flex: 0.8,
       align: 'right' as const,
       headerAlign: 'right' as const,
-      renderCell: (params: any) => (
-        <IconButton size="small" color="primary" title="Download Report">
-          <Download size={16} />
-        </IconButton>
-      ),
+      renderCell: (params: any) => {
+        const handleDownload = () => {
+          const csvContent = "Asset Tag,Asset Name,Category,Department,Status,Condition\n" +
+            assets.slice(0, 5).map(a => `${a.assetTag},"${a.name}",${a.categoryName || '—'},${a.departmentName || '—'},${a.status},${a.condition}`).join("\n");
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `${params.row.name.toLowerCase().replace(/ /g, '_')}.${params.row.format}`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.success(`Downloaded report: ${params.row.name}`);
+        };
+        return (
+          <IconButton size="small" color="primary" title="Download Report" onClick={handleDownload}>
+            <Download size={16} />
+          </IconButton>
+        );
+      },
     },
   ];
 
   const handleExportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setExportOpen(false);
+
+    // Dynamically generate and download CSV reports based on active data
+    let csvContent = "";
+    if (reportType === "asset_summary") {
+      csvContent = "Asset Tag,Asset Name,Category,Department,Status,Condition\n" +
+        assets.map(a => `${a.assetTag},"${a.name}",${a.categoryName || '—'},${a.departmentName || '—'},${a.status},${a.condition}`).join("\n");
+    } else if (reportType === "allocation_history") {
+      csvContent = "Asset Tag,Employee Name,Department,Date Allocated,Status\n" +
+        assets.filter(a => a.status === 'allocated').map(a => `${a.assetTag},"${a.assignedToName || 'Unassigned'}",${a.departmentName || '—'},${a.purchaseDate},Allocated`).join("\n");
+    } else {
+      csvContent = "Asset Tag,Asset Name,Cost,Purchase Date\n" +
+        assets.map(a => `${a.assetTag},"${a.name}",${a.purchasePrice},${a.purchaseDate}`).join("\n");
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${reportType}_report.${reportFormat}`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Custom report exported successfully!");
   };
 
   return (
